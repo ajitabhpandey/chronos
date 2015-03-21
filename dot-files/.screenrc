@@ -1,0 +1,12 @@
+# .screenrc
+# ajitabhp - 29th Nov 2013
+#
+startup message off
+shell bash
+maptimeout 0
+
+hardstatus alwayslastline
+hardstatus string '%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G} %H %{..Y} %d/%m/%Y %C%a | %l'
+
+# Bind Ctrl+A Shift+R to reload the .screenrc file
+bind R eval "source $HOME/.screenrc" "echo '.screenrc reloaded!'"
