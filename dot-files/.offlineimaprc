@@ -1,0 +1,99 @@
+# ~/.offlineimaprc
+# ajitabhpandey@ajitabhpandey.info
+
+[general]
+ui = ttyui
+# list of accounts to be synced, seperated by comma
+accounts = gmail,domain1,domain2
+# controls how many accounts can be synced simultaneously
+maxsyncaccounts = 3
+
+[mbnames]
+enabled = yes
+filename = ~/.mutt/mailboxes
+header = "mailboxes "
+peritem = "+%(accountname)s/%{foldername)s"
+sep = " "
+footer = "\n"
+
+[Account gmail]
+# minutes between sync
+autorefresh = 5
+# number of quick-syncs between autorefreshes.
+# quick-syncs do not update if the only change were to IMAP flags
+quick = 10
+localrepository = local-gmail
+remoterepository = remote-gmail
+# status cache. default is plain, which is slower
+status_backend = sqlite
+
+[Account domain1]
+autorefresh = 5
+quick = 10
+localrepository = local-domain1
+remoterepository = remote-domain1
+status_backend = sqlite
+
+[Account domain2]
+autorefresh = 5
+quick = 10
+localrepository = local-domain2
+remoterepository = remote-domain2
+status_backend = sqlite
+
+[Repository local-gmail]
+type = Maildir
+localfolders = ~/Mail/gmail
+
+[Repository local-domain1]
+type = Maildir
+localfolders = ~/Mail/domain1
+
+[Repository local-domain2]
+type = Maildir
+localfolders = ~/Mail/domain2
+
+[Repository remote-gmail]
+# offlineimap will normally close the IMAP server connections between 
+# refreshes if the global option autorefresh is specified. This setting 
+# has no effect if autorefresh is not set
+holdconnectionopen = yes
+# Instead of closing the connection once a sync is complete, offlineimap
+# will send empty data to the server to hold the connection open. A value 
+# of 60 attempts to hold the connection for a minute between syncs (both 
+# quick and autorefresh). This setting has no effect if autorefresh and 
+# holdconnection open are not both set.
+keepalive = 60
+# remote type can be IMAP or Gmail, the later being a preconfigured IMAP
+type = Gmail
+remoteuser = username
+remotepass = password
+realdelete = no
+maxconnections = 3
+# Uncomment the readonly line in case you do not want local mailbox changes
+# to sync to Gmail (server).
+# readonly = true
+# necessary as of offlineimap 6.5.4
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository remote-domain1]
+holdconnectionopen = yes
+keepalive = 60
+type = Gmail
+remoteuser = username@domain1.com
+remotepass = password
+realdelete = no
+maxconnections = 3
+# readonly = true
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository remote-domain2]
+holdconnectionopen = yes
+keepalive = 60
+type = Gmail
+remoteuser = username@domain2.com
+remotepass = password
+realdelete = no
+maxconnections = 3
+# readonly = true
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
