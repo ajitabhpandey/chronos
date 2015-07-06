@@ -24,8 +24,11 @@
 #
 use strict;
 use warnings;
+use 5.014;
 
 my $dl_tool;
+my @host_names;
+
 #
 # search path for either wget or curl
 for my $path ( split /:/, $ENV{PATH} ) {
@@ -43,7 +46,8 @@ for my $path ( split /:/, $ENV{PATH} ) {
 die "Neither curl not wget found in path" unless defined($dl_tool) and length $dl_tool;
 
 # List of URLs to be blocked.
-my @urls = ( "http://pgl.yoyo.org/adservers/serverlist.php?hostformat=nohtml" );
+#my @urls = ( "http://pgl.yoyo.org/adservers/serverlist.php?hostformat=nohtml" );
+my @urls = ( "http://someonewhocares.org/hosts/hosts" );
 
 # holds the number of records processed
 my $records = 0;
@@ -57,10 +61,37 @@ foreach my $url (@urls) {
 
     while (<WWWPAGE>) {
          chomp;
+		 # ignore lines starting with #
+         next if /^\s*#/;
+
+		 # ignore blank lines 
+         next if /^\s*$/;
+
+		 # get the second field from the host file which has the hostname
+	 	 my($ip, $host) = split;
+	 
+
+		 # ignore the localhost and broadcasthost entries
+	 	 next if ($host =~ /\s*local.*/) or ($host =~ /\s*broadcasthost\s*/ );
          $records++;
-         printf("zone \"%s\" { type master\; notify no\; file \"/etc/bind/db.blocked\"\; }\;\n", $_);
-         #print  " file \"/etc/bind/db.blocked\"\; }\;\n";
+		 
+		 # adding the host name to an array		 
+		 push @host_names, $host;
+		 
     }
+
+	# get the unique values
+	# there is no particular order. works only in Perl 5.14 onwards as 
+	# keys function can be used on hash references from 5.14 
+	my @unique_host_names = keys { map { $_ => 1 } @host_names };
+	
+	# for cases where working with perl version lower than 5.14, use the below logic to get unique values
+	# my @unique_host_names = do { my %seen; grep { !$seen{$_}++ } @host_names };
+	
+	# dumping the zone definitions
+	foreach (@unique_host_names) {
+		printf("zone \"%s\" { type master\; notify no\; file \"/etc/bind/db.blocked\"\; }\;\n", $_);
+	}
 
     my $message = "Total zones created: $records from $url";
     system("/usr/bin/logger -t $0 $message");
