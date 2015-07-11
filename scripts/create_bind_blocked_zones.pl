@@ -49,6 +49,9 @@ die "Neither curl not wget found in path" unless defined($dl_tool) and length $d
 #my @urls = ( "http://pgl.yoyo.org/adservers/serverlist.php?hostformat=nohtml" );
 my @urls = ( "http://someonewhocares.org/hosts/hosts" );
 
+# holds the lines read
+my $lines_read = 0;
+
 # holds the number of records processed
 my $records = 0;
 
@@ -60,6 +63,8 @@ foreach my $url (@urls) {
     printf( "//Created on %s from %s\n\n", scalar localtime, $url);
 
     while (<WWWPAGE>) {
+         $lines_read++;
+
          chomp;
 		 # ignore lines starting with #
          next if /^\s*#/;
@@ -70,7 +75,6 @@ foreach my $url (@urls) {
 		 # get the second field from the host file which has the hostname
 	 	 my($ip, $host) = split;
 	 
-
 		 # ignore the localhost and broadcasthost entries
 	 	 next if ($host =~ /\s*local.*/) or ($host =~ /\s*broadcasthost\s*/ );
          $records++;
@@ -93,7 +97,7 @@ foreach my $url (@urls) {
 		printf("zone \"%s\" { type master\; notify no\; file \"/etc/bind/db.blocked\"\; }\;\n", $_);
 	}
 
-    my $message = "Total zones created: $records from $url";
+    my $message = "Lines read: $lines_read, Processed: $records, Wrote: ".scalar @unique_host_names." from $url";
     system("/usr/bin/logger -t $0 $message");
 }
 

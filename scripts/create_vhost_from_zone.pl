@@ -23,8 +23,10 @@ my $DOCROOT = "/media/WD260/www/blocked-domains";
 my $records_processed = 0;
 my $records_read = 0;
 my $vhost_file_location = "/etc/monkey/sites/";
+my $lines_read = 0;
 
 while (<>) {
+  $lines_read++;
   chomp;
 # skip blank lines
   next if /^\s*$/;
@@ -57,5 +59,5 @@ while (<>) {
   $records_processed++;
 }
 
-my $message = "Read: $records_read, Processed: $records_processed zones";
+my $message = "Input Lines: $lines_read, Processed: $records_read, Wrote: $records_processed";
 system("/usr/bin/logger -t $0 $message");
