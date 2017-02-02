@@ -1,0 +1,48 @@
+---
+# tasks file for devstack
+- name: Add group "{{ STACK_GROUP }}"
+  group: name=stack system=yes state=present
+
+- name: Add user "{{ STACK_USER }}"
+  user:
+    name: "{{ STACK_USER }}"
+    system: yes
+    group: "{{ STACK_GROUP }}"
+    home: "{{ STACK_HOME }}"
+    shell: /bin/bash
+    state: present
+
+- name: Grant sudo privileges to the user stack
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    line: 'stack ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Clone the DevStack git repository
+  git:
+    repo: https://git.openstack.org/openstack-dev/devstack
+    dest: "{{ STACK_HOME }}/devstack"
+    clone: yes
+  become: true
+  become_user: "{{ STACK_USER }}"
+
+- name: Copy local.conf file to root of the devstack repository
+  template:
+    src: local.conf.j2
+    dest: "{{ DEVSTACK_GIT_CLONE_LOCATION }}/local.conf"
+    owner: "{{ STACK_USER }}"
+    group: "{{ STACK_GROUP }}"
+    mode: 0640
+
+- name: Download the pip (stack.sh curl command may fail due to SSL cert validation failure)
+  get_url:
+    url: "{{ PIP_URL }}"
+    dest: "{{ DEVSTACK_GIT_CLONE_LOCATION }}/files"
+    validate_certs: no
+
+- name: Start the DevStack install
+  command: "/bin/bash {{ STACK_HOME }}/devstack/stack.sh"
+  become: true
+  become_method: sudo
+  become_user: "{{ STACK_USER }}"

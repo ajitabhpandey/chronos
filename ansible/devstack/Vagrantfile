@@ -1,0 +1,33 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu/xenial64"
+  config.vm.network "private_network", ip: "171.15.19.31"
+  config.vm.network :forwarded_port, guest: 80, host: 8080
+  config.vm.network :forwarded_port, guest: 5000, host: 5000
+  config.vm.network :forwarded_port, guest: 9696, host: 9696
+  config.vm.network :forwarded_port, guest: 8774, host: 8774
+  config.vm.network :forwarded_port, guest: 35357, host: 35357
+  config.vm.provider :virtualbox do |vb|
+    vb.name = "devstack"
+    vb.memory = 4096
+    vb.cpus = 1
+    #   # Don't boot with headless mode
+    vb.gui = false
+    #
+  end
+
+  config.vm.hostname = "devstack"
+  config.vm.synced_folder "~/vm-data", "/vagrant", type: "virtualbox"
+  config.vm.box_check_update = true
+
+  config.vm.provision "shell", inline: "apt-get install -y python"
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "play.yml"
+    ansible.sudo = true
+  end
+end

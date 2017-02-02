@@ -1,0 +1,9 @@
+---
+# vars file for devstack
+STACK_USER: stack
+STACK_GROUP: stack
+STACK_HOME: /home/stack
+DEVSTACK_GIT_URL: https://git.openstack.org/openstack-dev/devstack
+DEVSTACK_GIT_CLONE_LOCATION: "{{ STACK_HOME }}/devstack"
+DEVSTACK_ADMIN_PASSWORD: Passw0rd123@Secret
+PIP_URL: https://bootstrap.pypa.io/get-pip.py
