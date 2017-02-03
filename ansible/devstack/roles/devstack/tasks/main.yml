@@ -21,10 +21,11 @@
 
 - name: Clone the DevStack git repository
   git:
-    repo: https://git.openstack.org/openstack-dev/devstack
+    repo: "{{ DEVSTACK_GIT_URL }}"
     dest: "{{ STACK_HOME }}/devstack"
     clone: yes
   become: true
+  become_method: sudo
   become_user: "{{ STACK_USER }}"
 
 - name: Copy local.conf file to root of the devstack repository
