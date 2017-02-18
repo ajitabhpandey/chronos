@@ -1,0 +1,3 @@
+---
+# vars file for rh6xtocentos6x
+CENTOS_RPM_STORE: "/tmp/centos-rpm"
