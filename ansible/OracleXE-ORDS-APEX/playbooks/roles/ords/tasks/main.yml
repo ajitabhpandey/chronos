@@ -1,0 +1,121 @@
+---
+# tasks file for ords
+
+- name: Install Expect which is needed by this playbook for installing ORDS
+  yum: name=expect state=present
+  tags: [install,ords]
+
+- name: Create the "{{ ORDS_DEST_LOCATION }}"
+  file:
+    path: "{{ ORDS_DEST_LOCATION }}"
+    state: directory
+    owner: "{{ TOMCAT_USER }}"
+    group: "{{ TOMCAT_GROUP }}"
+    mode: 0755
+  tags: [install,ords]
+
+- name: Check if the ords install zip file is already present
+  stat: path="{{ BASE_LOCATION }}/downloads/{{ ORDS_ARCHIVE }}"
+  register: ords_zip
+  tags: [install,ords]
+
+- name: Unarchive the ORDS archive file when it is already present on remote server
+  unarchive:
+    src: "{{ BASE_LOCATION }}/downloads/{{ ORDS_ARCHIVE }}"
+    dest: "{{ ORDS_DEST_LOCATION }}"
+    owner: "{{ TOMCAT_USER }}"
+    group: "{{ TOMCAT_GROUP }}"
+    mode: 0755
+    remote_src: yes
+  when: (ords_zip.stat.exists)
+  tags: [install,ords]
+
+- name: Unarchive the ORDS archive file after uploading to remote server
+  unarchive:
+    src: "{{ ORDS_ARCHIVE }}"
+    dest: "{{ ORDS_DEST_LOCATION }}"
+    owner: "{{ TOMCAT_USER }}"
+    group: "{{ TOMCAT_GROUP }}"
+    mode: 0755
+  when: (not ords_zip.stat.exists)
+  tags: [install,ords]
+
+- name: Create the directory for extracting ords.war for manual install
+  file:
+    path: "{{ ORDS_MANUAL_EXTRACT_LOCATION }}"
+    state: directory
+    owner: "{{ ORDS_USER }}"
+    group: "{{ ORDS_GROUP }}"
+    mode: 0755
+  tags: [install,ords,manual]
+
+- name: Unzip ords.war file on remote for manual install
+  unarchive:
+    src: "{{ ORDS_DEST_LOCATION }}/ords.war"
+    dest: "{{ ORDS_MANUAL_EXTRACT_LOCATION }}"
+    owner: "{{ ORDS_USER }}"
+    group: "{{ ORDS_GROUP }}"
+    mode: 0755
+    remote_src: yes
+  tags: [install,ords,manual]
+
+- name: Copy script and response file for ORDS manual install
+  template:
+    src: "{{ item.0 }}"
+    dest: "{{ ORDS_MANUAL_EXTRACT_LOCATION }}/{{ item.1 }}"
+    owner: "{{ ORDS_USER }}"
+    group: "{{ ORDS_GROUP }}"
+    mode: 0755
+  with_together:
+    - ["{{ ORDS_MANUAL_INSTALL_RESP }}.j2", "{{ ORDS_MANUAL_INSTALL_SH }}.j2"]
+    - ["{{ ORDS_MANUAL_INSTALL_RESP }}", "{{ ORDS_MANUAL_INSTALL_SH }}"]
+  tags: [install,ords,manual]
+
+- name: Run ORDS Manual install
+  command: chdir="{{ ORDS_MANUAL_EXTRACT_LOCATION }}/scripts/install/core" "{{ ORDS_MANUAL_EXTRACT_LOCATION }}/{{ ORDS_MANUAL_INSTALL_SH }}"
+  become: yes
+  become_user: "{{ ORDS_USER }}"
+  tags: [install,ords,manual]
+
+- name: Set ORDS config Directory
+  command: chdir="{{ ORDS_DEST_LOCATION }}" java -jar ords.war configdir "{{ ORDS_CONFIG_LOCATION }}"
+  become: yes
+  become_user: "{{ TOMCAT_USER }}"
+  tags: [install,configuration,ords,manual]
+
+- name: Copy the ords_params file
+  template:
+    src: ords_params.properties.j2
+    dest: "{{ ORDS_DEST_LOCATION }}/params/ords_params.properties"
+    owner: "{{ TOMCAT_USER }}"
+    group: "{{ TOMCAT_GROUP }}"
+    mode: 0644
+  tags: [install,configuration,ords,manual]
+
+- name: Copy the {{ ORDS_CONFIG_SH }} script
+  template:
+    src: "{{ ORDS_CONFIG_SH }}.j2"
+    dest: "{{ ORDS_MANUAL_EXTRACT_LOCATION }}/{{ ORDS_CONFIG_SH }}"
+    owner: "{{ TOMCAT_USER }}"
+    group: "{{ TOMCAT_GROUP }}"
+    mode: 0755
+  tags: [install,configuration,ords,manual]
+
+- name: Execute the manual configuration using Expect
+  command: "{{ ORDS_MANUAL_EXTRACT_LOCATION }}/{{ ORDS_CONFIG_SH }}"
+  become: yes
+  become_user: "{{ TOMCAT_USER }}"
+  tags: [install,configuration,ords,manual]
+
+- name: Cleanup - Remove all copied files required for manual configuration
+  file:
+    path: "{{ ORDS_MANUAL_EXTRACT_LOCATION }}"
+    state: absent
+  tags: [install,ords,manual]
+
+- name: Copy the ORDS.WAR file to the tomcat webapp location
+  command: chdir="{{ ORDS_DEST_LOCATION }}" cp -v ords.war "{{ TOMCAT_WEBAPP_LOCATION }}"
+  become: yes
+  become_user: "{{ TOMCAT_USER }}"
+  tags: [install,ords,manual]
+  notify: Restart tomcat

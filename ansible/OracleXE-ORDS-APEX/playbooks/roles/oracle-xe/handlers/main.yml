@@ -1,0 +1,6 @@
+---
+# handler file for oracle-xe
+
+- name: Restart firewalld
+  service: name=firewalld state=restarted
+  when: ansible_os_family == "RedHat"

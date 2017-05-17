@@ -1,0 +1,14 @@
+---
+# tasks file for apache
+- name: Install apache
+  yum:
+    name: httpd
+    state: present
+  tags: [install,upgrade,apache]
+
+- name: Set httpd to autostart on boot and ensure it is running
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+  tags: [install,upgrade,apache]

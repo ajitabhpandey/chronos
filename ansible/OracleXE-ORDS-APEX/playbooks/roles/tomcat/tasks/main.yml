@@ -1,0 +1,74 @@
+---
+# tasks file for tomcat
+- name: Add group tomcat
+  group: name=tomcat system=yes state=present
+
+- name: Add user tomcat
+  user: name=tomcat system=yes group=tomcat home={{ TOMCAT_INSTALL_LOCATION }} shell=/bin/bash state=present
+
+- name: Create tomcat directory
+  file:
+    path: "{{ TOMCAT_INSTALL_LOCATION }}"
+    owner: tomcat
+    group: tomcat
+    mode: 0755
+    state: directory
+
+- name: Download and Unarchive tomcat
+  unarchive:
+    src: "{{ TOMCAT_DOWNLOAD_LINK }}"
+    dest: "{{ TOMCAT_INSTALL_LOCATION }}"
+    owner: tomcat
+    group: tomcat
+    mode: 0755
+    remote_src: True
+
+- name: Create a symlink for latest version of tomcat
+  file:
+    src: "{{ TOMCAT_INSTALL_LOCATION }}/{{ TOMCAT_VERSION_TO_INSTALL }}"
+    dest: "{{ TOMCAT_INSTALL_LOCATION }}/latest"
+    state: link
+
+- name: Change default port for Connector to {{ TOMCAT_PORT }}
+  lineinfile:
+    dest: "{{ TOMCAT_INSTALL_LOCATION }}/latest/conf/server.xml"
+    regexp: '^(\s*)<Connector port="8080" protocol="HTTP/1.1"$'
+    line: '\1<Connector port="{{ TOMCAT_PORT }}" protocol="HTTP/1.1"'
+    backrefs: yes
+
+- name: Copy SysV init for tomcat
+  template:
+    src: tomcat_sysvinit_service.j2
+    dest: /etc/init.d/tomcat
+    owner: root
+    group: root
+    mode: 0755
+  when: ansible_service_mgr == "sysvinit"
+
+- name: Copy Systemd service for tomcat
+  template:
+    src: tomcat_systemd_service.j2
+    dest: /etc/systemd/system/tomcat.service
+    owner: root
+    group: root
+    mode: 0644
+  when: ansible_service_mgr == "systemd"
+
+- name: Copy Upstart service for tomcat
+  template:
+    src: tomcat_upstart_service.j2
+    dest: /etc/init/tomcat.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: ansible_service_mgr == "upstart"
+
+- name: Reload the Systemctl Daemon
+  command: systemctl daemon-reload
+  when: ansible_service_mgr == "systemd"
+
+- name: Start Tomcat
+  service:
+    name: tomcat
+    enabled: yes
+    state: started

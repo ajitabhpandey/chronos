@@ -1,0 +1,25 @@
+---
+- name: Check if JDK is already installed
+  command: rpm -q "{{ JDK_VERSION_TO_INSTALL }}" warn=False
+  register: JDK_CHECK
+  ignore_errors: True
+
+- name: Copy JDK RPM File To Server
+  copy: src="{{ JDK_INSTALLATION_RPM }}" dest=/tmp/ owner=root group=root mode=0755
+  when: JDK_CHECK.stdout | search ("package .* is not installed")
+
+- name: Install JDK RPM
+  yum:
+    name: "/tmp/{{ JDK_INSTALLATION_RPM }}"
+    disable_gpg_check: yes
+    disablerepo: "*"
+    state: present
+  when: JDK_CHECK.stdout | search ("package .* is not installed")
+
+- name: Copy Profile Template With Environment Variables
+  template: src=java_env.sh.j2 dest=/etc/profile.d/java_env.sh owner=root group=root mode=0644
+
+- name: Remove the copied RPM File
+  file:
+    path: "/tmp/{{ JDK_INSTALLATION_RPM }}"
+    state: absent

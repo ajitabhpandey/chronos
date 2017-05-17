@@ -1,0 +1,20 @@
+---
+# vars file for apex-upgrade
+APEX_ARCHIVE: apex_5.1.zip
+APEX_DEST_LOCATION: /u01/downloads
+ORACLE_USER: oracle
+ORACLE_GROUP: dba
+APEX_SCRIPT_LOCATION: "{{ APEX_DEST_LOCATION }}/apex"
+APEX_INSTALL_SCRIPT: apexins.sh
+APEX_POST_INSTALL_SCRIPT: apex_post_install.sh
+APEX_ORDS_REST_SCRIPT: apex_rest_config.sh
+APEX_ORDS_REST_CONFIG: apex-rest-config-input
+APEX_PUBLIC_USER_PASSWORD: Passw0rd123
+APEX_LISTENER_PASSWORD: Passw0rd123
+APEX_REST_PUBLIC_USER_PASSWORD: Passw0rd123
+WEBAPPS_ROOT: /usr/share/tomcat/latest/webapps
+APACHE_FRONT: !!str yes
+APACHE_WEB_DIR: /var/www
+APACHE_IMAGES_LOCATION: "{{ APACHE_WEB_DIR }}/apex"
+TOMCAT_USER: tomcat
+TOMCAT_GROUP: tomcat

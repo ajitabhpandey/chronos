@@ -1,0 +1,26 @@
+description "Tomcat Server"
+author "Ajitabh Pandey <ajitabhpandey@ajitabhpandey.info>"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+respawn
+respawn limit 10 5
+
+# run as non privileged user
+setuid {{ TOMCAT_USER }}
+setgid {{ TOMCAT_GROUP }}
+
+# adapt paths:
+env JAVA_HOME={{ JAVA_HOME }}
+env JRE_HOME={{ JRE_HOME }}
+env CATALINA_HOME={{ CATALINA_HOME }}
+
+# adapt java options to suit your needs:
+env JAVA_OPTS="{{ JAVA_OPTS }}"
+
+exec $CATALINA_HOME/bin/catalina.sh run
+
+# cleanup temp directory after stop
+post-stop script
+  rm -rf $CATALINA_HOME/temp/*
+end script

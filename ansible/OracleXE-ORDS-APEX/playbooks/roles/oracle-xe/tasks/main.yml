@@ -1,0 +1,115 @@
+---
+# Installs and Configures Oracle XE
+
+  - name: Install required packages for Oracle XE on RedHat
+    yum: name={{ item }} state=present
+    with_items:
+      - bc
+      - net-tools
+      - libaio
+    tags: [install,xe]
+
+  - name: Add group dba
+    group: name=dba system=yes state=present
+    tags: [install,xe]
+
+  - name: Add group oinstall
+    group: name=oinstall system=yes state=present
+    tags: [install,xe]
+
+  - name: Creating the /u01/app directory
+    file: path=/u01/app state=directory
+    tags: [install,xe]
+
+  - name: Creating the /u01/app directory
+    file: path=/u01/downloads state=directory
+    tags: [install,xe]
+
+  - name: Add user oracle
+    user: name=oracle system=yes group=oinstall groups=dba,oinstall home=/u01/app/oracle shell=/bin/bash state=present
+    tags: [install,xe]
+
+  - name: Setting ownership on /u01
+    file: path=/u01 owner=oracle group=dba recurse=yes state=directory
+    tags: [install,xe]
+
+  - name: Check for swap file presence
+    stat: path={{ swapfile_location }}
+    register: swap
+    tags: [install,xe]
+
+  - name: Create SWAP file if not present
+    include: create-swap.yml
+    when: (not swap.stat.exists)
+    tags: [install,xe]
+
+  - name: Checking for oracle-xe init script presence
+    stat: path=/etc/init.d/oracle-xe
+    register: oracleinit
+    tags: [install,xe]
+
+  - name: Copying the Oracle XE RPM to server
+    copy: src="oracle-xe-11.2.0-1.0.x86_64.rpm" dest=/u01/downloads/ owner=root group=root mode=0755
+    when: (not oracleinit.stat.exists) and (copy_rpm == 'yes')
+    tags: [install,xe]
+
+  - name: Install Oracle XE RPM
+    yum: name={{ item }} disable_gpg_check=yes disablerepo=* state=present
+    with_items:
+      - /u01/downloads/oracle-xe-11.2.0-1.0.x86_64.rpm
+    when: (not oracleinit.stat.exists)
+    tags: [install,xe]
+
+  - name: Checking Oracle Config File Presence
+    stat: path=/etc/sysconfig/oracle-xe
+    register: oracleconf
+    tags: [install,xe]
+
+  - name: Creates a entry in the hosts file to ensure that hostname is resolving
+    lineinfile:
+      dest: /etc/hosts
+      state: present
+      insertafter: EOF
+      line: "{{ ansible_default_ipv4.address }} {{ ansible_hostname }}"
+    tags: [install,xe]
+
+  - name: Configure Oracle if not already configured or Reconfiguration Desired
+    include: configure-xe.yml
+    when: (not oracleconf.stat.exists) or (oracle_reconfigure == 'yes')
+    tags: [install,xe]
+
+  - name: Restart oracle-xe
+    service: name=oracle-xe state=restarted
+    when: (not oracleinit.stat.exists) or (not oracleconf.stat.exists) or (oracle_reconfigure == 'yes')
+    tags: [install,xe]
+
+  - name: Checking if the Oracle Environment Variable setting file exists
+    stat: path=/etc/profile.d/oracle_env.sh
+    register: oracleenv
+    tags: [install,xe]
+
+  - name: Copying the environment variables to system bash_profile
+    command: cp /u01/app/oracle/product/11.2.0/xe/bin/oracle_env.sh  /etc/profile.d/
+    when: (not oracleenv.stat.exists)
+    tags: [install,xe]
+
+  - name: Copy the script to set sys password
+    template:
+        src: set_sys_passwd.sh.j2
+        dest: /tmp/set_sys_passwd.sh
+        owner: oracle
+        group: dba
+        mode: 0755
+    tags: [install,configure,xe]
+
+  - name: Set the password for sys user
+    command: /tmp/set_sys_passwd.sh
+    become: yes
+    become_user: oracle
+    tags: [install,xe,configure]
+
+  - name: Remove the script
+    file:
+      path: /tmp/set_sys_passwd.sh
+      state: absent
+    tags: [install,xe,configure]

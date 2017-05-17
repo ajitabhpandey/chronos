@@ -1,0 +1,103 @@
+---
+# tasks file for apex-upgrade
+- name: Ensures "{{ APEX_DEST_LOCATION }}" exists
+  file:
+    path: "{{ APEX_DEST_LOCATION }}"
+    state: directory
+    owner: "{{ ORACLE_USER }}"
+    group: "{{ ORACLE_GROUP }}"
+    mode: 0755
+  tags: [install,upgrade,apex]
+
+- name: Unarchive the Apex archive file after uploading to remote server
+  unarchive:
+    src: "{{ APEX_ARCHIVE }}"
+    dest: "{{ APEX_DEST_LOCATION }}"
+    owner: "{{ ORACLE_USER }}"
+    group: "{{ ORACLE_GROUP }}"
+    mode: 0755
+  tags: [install,upgrade,apex]
+
+- name: Copy the APEX  (Full) update / install scripts to server
+  template:
+    src: "{{ item.0 }}"
+    dest: "{{ APEX_SCRIPT_LOCATION }}/{{ item.1 }}"
+    owner: "{{ ORACLE_USER }}"
+    group: "{{ ORACLE_GROUP }}"
+    mode: 0755
+  with_together:
+      - ["{{ APEX_INSTALL_SCRIPT }}.j2", "{{ APEX_POST_INSTALL_SCRIPT }}.j2", "{{ APEX_ORDS_REST_SCRIPT }}.j2", "{{ APEX_ORDS_REST_CONFIG }}.j2"]
+      - ["{{ APEX_INSTALL_SCRIPT }}", "{{ APEX_POST_INSTALL_SCRIPT }}", "{{ APEX_ORDS_REST_SCRIPT }}", "{{ APEX_ORDS_REST_CONFIG }}"]
+  tags: [install,upgrade,apex]
+
+- name: Run the APEX Installation script
+  command: chdir="{{ APEX_SCRIPT_LOCATION }}" "./{{ APEX_INSTALL_SCRIPT }}"
+  become: true
+  become_user: "{{ ORACLE_USER }}"
+  tags: [install,upgrade,apex]
+
+- name: Configure ORDS RESTful services for APEX
+  command: chdir="{{ APEX_SCRIPT_LOCATION }}" "./{{ APEX_ORDS_REST_SCRIPT }}"
+  become: true
+  become_user: "{{ ORACLE_USER }}"
+  tags: [install,upgrade,apex]
+
+- name: Run the APEX Post Install commands
+  command: chdir="{{ APEX_SCRIPT_LOCATION }}" "./{{ APEX_POST_INSTALL_SCRIPT }}"
+  become: true
+  become_user: "{{ ORACLE_USER }}"
+  tags: [install,upgrade,apex]
+
+- name: Copy APEX Images to Tomcat WebApps Folder
+  command: cp -r  "{{ APEX_SCRIPT_LOCATION }}/images" "{{ WEBAPPS_ROOT }}"
+  tags: [install,upgrade,apex]
+
+- name: Create a symlink "i" in Tomcat WebApps for "images" directory
+  file:
+    src: "{{ WEBAPPS_ROOT }}/images"
+    dest: "{{ WEBAPPS_ROOT }}/i"
+    owner: "{{ TOMCAT_USER }}"
+    group: "{{ TOMCAT_GROUP }}"
+    state: link
+  tags: [install,upgrade,apex]
+
+- name: Check for apache default web directory existence (Simple way for - Is Apache Installed?)
+  stat: "path={{ APACHE_WEB_DIR }}"
+  register: _APACHE_WEB_DIR
+  when: (APACHE_FRONT == "yes")
+  tags: [install,upgrade,apex]
+
+- name: Create Apache APEX directory
+  file:
+    path: "{{ APACHE_IMAGES_LOCATION }}"
+    state: directory
+    mode: 0755
+  when: (APACHE_FRONT == "yes") and (_APACHE_WEB_DIR.stat.exists)
+  tags: [install,upgrade,apex]
+
+- name: Copy APEX Images to Apache Web Root
+  command: cp -r  "{{ APEX_SCRIPT_LOCATION }}/images" "{{ APACHE_IMAGES_LOCATION }}"
+  when: (APACHE_FRONT == "yes") and (_APACHE_WEB_DIR.stat.exists)
+  tags: [install,upgrade,apex]
+
+- name: Copy the APEX ORDS Virtual Server Definition file in conf.d directory
+  template:
+    src: apex-ords.conf.j2
+    dest: /etc/httpd/conf.d/apex-ords.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: (APACHE_FRONT == "yes") and (_APACHE_WEB_DIR.stat.exists)
+  notify: Restart httpd
+  tags: [install,upgrade,apex]
+
+- name: Remove all the Copied scripts
+  file:
+    path: "{{ APEX_SCRIPT_LOCATION }}/{{ item }}"
+    state: absent
+  with_items:
+    - "{{ APEX_POST_INSTALL_SCRIPT }}"
+    - "{{ APEX_INSTALL_SCRIPT }}"
+    - "{{ APEX_ORDS_REST_SCRIPT }}"
+    - "{{ APEX_ORDS_REST_CONFIG }}"
+  tags: [install,upgrade,apex]

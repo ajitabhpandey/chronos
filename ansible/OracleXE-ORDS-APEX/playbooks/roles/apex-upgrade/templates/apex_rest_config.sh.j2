@@ -1,0 +1,5 @@
+#!/bin/sh
+
+. /etc/profile.d/oracle_env.sh
+
+sqlplus / as SYSDBA @apex_rest_config.sql < {{ APEX_ORDS_REST_CONFIG }}

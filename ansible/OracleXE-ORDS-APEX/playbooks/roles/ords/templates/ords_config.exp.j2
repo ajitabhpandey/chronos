@@ -1,0 +1,44 @@
+#!/usr/bin/expect
+
+set timeout 20
+
+set CMD "java -jar /u01/ords/ords.war install"
+spawn {*}$CMD
+
+expect "Enter the database password for ORDS_PUBLIC_USER:"
+send "{{ ORDS_PUBLIC_USER_PASSWORD }}\r"
+
+expect "Confirm password:"
+send "{{ ORDS_PUBLIC_USER_PASSWORD }}\r"
+
+#expect -re "Enter the username with SYSDBA privileges to verify the installation *"
+#send "\r"
+
+#expect "Enter the database password for SYS:"
+#send "{{ XE_SYS_PASSWORD }}\r"
+
+#expect "Confirm password:"
+#send "{{ XE_SYS_PASSWORD }}\r"
+
+expect "Enter the database password for APEX_PUBLIC_USER:"
+send "{{ APEX_PUBLIC_USER_PASSWORD }}\r"
+
+expect "Confirm password:"
+send "{{ APEX_PUBLIC_USER_PASSWORD }}\r"
+
+expect "Enter the database password for APEX_LISTENER:"
+send "{{ APEX_LISTENER_PASSWORD }}\r"
+
+expect "Confirm password:"
+send "{{ APEX_LISTENER_PASSWORD }}\r"
+
+expect "Enter the database password for APEX_REST_PUBLIC_USER:"
+send "{{ APEX_REST_PUBLIC_USER_PASSWORD }}\r"
+
+expect "Confirm password:"
+send "{{ APEX_REST_PUBLIC_USER_PASSWORD }}\r"
+
+expect -re "Enter 1 if you wish to start in standalone mode or 2 to exit *"
+send "2\r"
+
+interact

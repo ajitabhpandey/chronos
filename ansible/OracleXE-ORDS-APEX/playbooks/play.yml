@@ -1,0 +1,45 @@
+---
+- name: "Configuring Host"
+##################################
+  hosts: all
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+  remote_user: root
+  become: True
+  gather_facts: True
+  pre_tasks:
+    - name: Set SELinux to Permissive if found enabled
+      command: setenforce Permissive
+      when: ansible_selinux.mode == "enforcing"
+
+    - name: Set SELinux to Permissive in config file if found Enforcing
+      lineinfile:
+        dest: /etc/selinux/config
+        regexp: '(\s*)SELINUX=enforcing$'
+        line: '\1SELINUX=permissive'
+        backrefs: yes
+      when: ansible_selinux.config_mode == "enforcing"
+
+    - name: Install some additional packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - unzip
+    - name: Fix the LC_CTYPE errors
+      lineinfile:
+        dest: /etc/environment
+        line: "{{ item }}"
+        state: present
+      with_items:
+        - "LC_ALL=en_US.utf-8"
+        - "LANG=en_US.utf-8"
+
+  roles:
+    - apache
+    - jdk
+    - tomcat
+    - oracle-xe
+    - ords
+    - apex-upgrade

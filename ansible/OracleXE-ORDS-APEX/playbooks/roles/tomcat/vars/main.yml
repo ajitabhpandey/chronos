@@ -1,0 +1,15 @@
+---
+# vars file for tomcat
+TOMCAT_VERSION_TO_INSTALL: apache-tomcat-8.5.15
+# (See for latest download version - https://tomcat.apache.org/download-90.cgi)
+#TOMCAT_DOWNLOAD_LINK: http://www-us.apache.org/dist/tomcat/tomcat-9/v9.0.0.M17/bin/apache-tomcat-9.0.0.M17.tar.gz
+TOMCAT_DOWNLOAD_LINK: http://redrockdigimark.com/apachemirror/tomcat/tomcat-8/v8.5.15/bin/apache-tomcat-8.5.15.tar.gz
+#TOMCAT_DOWNLOAD_LINK: http://www-eu.apache.org/dist/tomcat/tomcat-7/v7.0.75/bin/apache-tomcat-7.0.75.tar.gz
+TOMCAT_INSTALL_LOCATION: /usr/share/tomcat
+TOMCAT_USER: tomcat
+TOMCAT_GROUP: tomcat
+CATALINA_HOME: "{{ TOMCAT_INSTALL_LOCATION }}/latest"
+CATALINA_OPTS: -Xms512M -Xmx1024M -server -XX:+UseParallelGC
+JAVA_HOME: /usr/java/latest
+JRE_HOME: "{{ JAVA_HOME}}/jre"
+JAVA_OPTS: -Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom

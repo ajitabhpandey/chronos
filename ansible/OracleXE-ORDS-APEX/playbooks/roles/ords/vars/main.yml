@@ -1,0 +1,15 @@
+---
+# vars file for ords
+ORDS_ARCHIVE: ords.3.0.9.348.07.16.zip
+BASE_LOCATION: /u01
+ORDS_DEST_LOCATION: "{{ BASE_LOCATION }}/ords"
+ORDS_CONFIG_LOCATION: "{{ ORDS_DEST_LOCATION }}/config"
+ORDS_USER: oracle
+ORDS_GROUP: oinstall
+ORDS_MANUAL_EXTRACT_LOCATION: /tmp/ords
+ORDS_MANUAL_INSTALL_RESP: ords_manual_install.resp
+ORDS_MANUAL_INSTALL_SH: ords_manual_install.sh
+ORDS_CONFIG_SH: ords_config.exp
+TOMCAT_USER: tomcat
+TOMCAT_GROUP: tomcat
+TOMCAT_WEBAPP_LOCATION: /usr/share/tomcat/latest/webapps

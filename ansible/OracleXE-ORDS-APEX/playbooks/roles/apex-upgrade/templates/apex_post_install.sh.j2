@@ -1,0 +1,22 @@
+#!/bin/sh
+
+. /etc/profile.d/oracle_env.sh
+
+sqlplus /nolog <<EOF
+CONNECT / as sysdba
+whenever sqlerror exit sql.sqlcode
+set echo off
+set heading off
+
+create profile web_service_profile limit password_life_time unlimited;
+
+alter user apex_public_user profile web_service_profile;
+alter user apex_listener profile web_service_profile;
+alter user apex_rest_public_user profile web_service_profile;
+
+alter user apex_public_user account unlock;
+alter user apex_public_user identified by "{{ APEX_PUBLIC_USER_PASSWORD }}";
+
+exit;
+
+EOF

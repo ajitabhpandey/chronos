@@ -1,0 +1,41 @@
+---
+# Configure the Oracle XE instance
+
+    - name: Copying the configuration template
+      template: src=oracle-xe-conf.j2 dest=/tmp/oracle-xe.conf owner=root group=root mode=0755
+      tags: [install,configure,xe]
+
+    - name: Stop Listener
+      shell: "/u01/app/oracle/product/11.2.0/xe/bin/lsnrctl stop"
+      when: (oracle_reconfigure == 'yes')
+      tags: [install,configure,xe]
+
+    - name: Stop oracle-xe
+      service: name=oracle-xe state=stopped
+      tags: [install,configure,xe]
+
+    - name: Configure instance
+      copy: src={{ item }} dest=/u01/app/oracle/product/11.2.0/xe/config/scripts/ owner=oracle group=oinstall mode=0755
+      with_fileglob:
+        - config/*.ora
+      tags: [install,configure,xe]
+
+    - name: Remove previous configuration
+      file: path=/etc/sysconfig/oracle-xe state=absent
+      tags: [install,configure,xe]
+
+    - name: Configure oracle-xe
+      shell: /etc/init.d/oracle-xe configure < /tmp/oracle-xe.conf >> /tmp/oracle-xe.log
+      tags: [install,configure,xe]
+
+    - name: Check if firewall-cmd binary exists
+      stat:
+        path: /usr/bin/firewall-cmd
+      register: firewallcmd
+      tags: [install,configure,xe]
+
+    - name: Open port 1521 in the local firewall
+      shell: firewall-cmd --permanent --add-port=1521/tcp
+      when: (ansible_os_family == "RedHat") and (firewallcmd.stat.exists == True)
+      notify: Restart firewalld
+      tags: [install,configure,xe]

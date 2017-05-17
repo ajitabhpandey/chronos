@@ -1,0 +1,6 @@
+generated-docs
+*.retry
+.DS_Store
+.vagrant/
+*.rpm
+*.zip

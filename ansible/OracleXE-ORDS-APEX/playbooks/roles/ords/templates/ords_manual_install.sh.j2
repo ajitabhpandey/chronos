@@ -1,0 +1,20 @@
+#!/bin/bash
+. /etc/profile.d/oracle_env.sh
+
+# Unlock the APEX Public User and set a password
+sqlplus -s /nolog <<EOF
+CONNECT / AS SYSDBA
+ALTER USER {{ DB_USER }} ACCOUNT UNLOCK;
+ALTER USER {{ DB_USER }} IDENTIFIED BY {{ APEX_PUBLIC_USER_PASSWORD }};
+EXIT;
+EOF
+
+# ORDS Manual Install
+sqlplus -s / as sysdba "@{{ ORDS_MANUAL_EXTRACT_LOCATION }}/scripts/install/core/ords_manual_install.sql" < "{{ ORDS_MANUAL_EXTRACT_LOCATION }}/{{ ORDS_MANUAL_INSTALL_RESP}}"
+
+# Set the password for ORDS Public User
+sqlplus -s /nolog <<EOF
+CONNECT / AS SYSDBA
+ALTER USER ORDS_PUBLIC_USER IDENTIFIED BY {{ ORDS_PUBLIC_USER_PASSWORD }};
+EXIT;
+EOF

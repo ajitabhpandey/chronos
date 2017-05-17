@@ -1,0 +1,9 @@
+#!/bin/bash
+. /etc/profile.d/oracle_env.sh
+
+# Set the password for sys user
+sqlplus -s /nolog <<EOF
+CONNECT / AS SYSDBA
+ALTER USER SYS IDENTIFIED BY {{ oracle_system_pwd }};
+EXIT;
+EOF

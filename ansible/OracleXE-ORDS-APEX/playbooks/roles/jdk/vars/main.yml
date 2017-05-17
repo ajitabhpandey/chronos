@@ -1,0 +1,5 @@
+---
+# vars file for jdk
+JDK_INSTALLATION_RPM: jdk-8u121-linux-x64.rpm
+JDK_VERSION_TO_INSTALL: jdk1.8.0_121
+JAVA_HOME: /usr/java/latest
