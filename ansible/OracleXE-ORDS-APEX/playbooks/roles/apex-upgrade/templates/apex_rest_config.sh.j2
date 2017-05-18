@@ -2,4 +2,15 @@
 
 . /etc/profile.d/oracle_env.sh
 
-sqlplus / as SYSDBA @apex_rest_config.sql < {{ APEX_ORDS_REST_CONFIG }}
+sqlplus -s /nolog <<EOF
+connect / as SYSDBA
+
+whenever sqlerror exit sql.sqlcode
+
+set pagesize 0 feedback off verify off heading off echo off;
+
+@apex_rest_config.sql < {{ APEX_ORDS_REST_CONFIG }}
+
+exit;
+
+EOF

@@ -2,13 +2,18 @@
 
 . /etc/profile.d/oracle_env.sh
 
-sqlplus /nolog <<EOF
+sqlplus -s /nolog <<EOF
 CONNECT / as sysdba
 whenever sqlerror exit sql.sqlcode
-set echo off
-set heading off
 
-create profile web_service_profile limit password_life_time unlimited;
+set pagesize 0 feedback off verify off heading off echo off;
+
+begin
+  select count(*) into profile_exists from dba_profiles where profile='WEB_SERVICE_PROFILE';
+  if (profile_exists = 0) then
+    execute immediate 'create profile web_service_profile limit password_life_time unlimited';
+  end if
+end
 
 alter user apex_public_user profile web_service_profile;
 alter user apex_listener profile web_service_profile;
