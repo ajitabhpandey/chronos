@@ -1,0 +1,6 @@
+---
+# vars file for apex-patch
+APEX_PATCH_ARCHIVE: p25341386_511_Generic.zip
+APEX_DEST_LOCATION: /u01/downloads
+ORACLE_USER: oracle
+ORACLE_GROUP: dba

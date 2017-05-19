@@ -1,0 +1,23 @@
+---
+# tasks file for apex-patch
+# Based on instructions located at
+# http://www.oracle.com/technetwork/developer-tools/apex/application-express/apex-511-patch-set-notes-3661846.html
+- name: Unarchive the Apex Patch archive file after uploading to remote server
+  unarchive:
+    src: "{{ APEX__PATCH_ARCHIVE }}"
+    dest: "{{ APEX_DEST_LOCATION }}"
+    owner: "{{ ORACLE_USER }}"
+    group: "{{ ORACLE_GROUP }}"
+    mode: 0755
+  tags: [apex-patch]
+
+- name: Stop httpd
+  service:
+    name: httpd
+    state: stop
+
+- name: Stop tomcat
+  service:
+    name: tomcat
+    state: stop
+
