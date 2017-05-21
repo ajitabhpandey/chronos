@@ -2,6 +2,7 @@
 # tasks file for apex-patch
 # Based on instructions located at
 # http://www.oracle.com/technetwork/developer-tools/apex/application-express/apex-511-patch-set-notes-3661846.html
+
 - name: Unarchive the Apex Patch archive file after uploading to remote server
   unarchive:
     src: "{{ APEX__PATCH_ARCHIVE }}"
@@ -11,13 +12,58 @@
     mode: 0755
   tags: [apex-patch]
 
-- name: Stop httpd
+- name: Stop httpd before applying the patch
   service:
     name: httpd
     state: stop
+  tags: [apex-patch]
 
-- name: Stop tomcat
+- name: Stop tomcat before applying the patch
   service:
     name: tomcat
     state: stop
+  tags: [apex-patch]
 
+- name: Copy the APEX patch script to server
+  template:
+    src: "{{ APEX_PATCH_SCRIPT }}".j2
+    dest: "{{ APEX_PATCH_SCRIPT_LOCATION }}/{{ APEX_PATCH_SCRIPT }}"
+    owner: "{{ ORACLE_USER }}"
+    group: "{{ ORACLE_GROUP }}"
+    mode: 0755
+  tags: [apex-patch]
+
+- name: Run the APEX Patch script
+  command: chdir="{{ APEX_PATCH_SCRIPT_LOCATION }}" "./{{ APEX_PATCH_SCRIPT }}"
+  become: true
+  become_user: "{{ ORACLE_USER }}"
+  tags: [apex-patch]
+
+- name: Copy APEX Images to Tomcat WebApps Folder
+  command: cp -r  "{{ APEX_PATCH_SCRIPT_LOCATION }}/images" "{{ WEBAPPS_ROOT }}"
+  tags: [apex-patch]
+
+- name: Check for apache default web directory existence (Simple way for - Is Apache Installed?)
+  stat: "path={{ APACHE_WEB_DIR }}"
+  register: _APACHE_WEB_DIR
+  when: (APACHE_FRONT == "yes")
+  tags: [apex-patch]
+
+- name: Create Apache APEX directory
+  file:
+    path: "{{ APACHE_IMAGES_LOCATION }}"
+    state: directory
+    mode: 0755
+  when: (APACHE_FRONT == "yes") and (_APACHE_WEB_DIR.stat.exists)
+  tags: [apex-patch]
+
+- name: Copy APEX Images to Apache Web Root
+  command: cp -r  "{{ APEX_PATCH_SCRIPT_LOCATION }}/images" "{{ APACHE_IMAGES_LOCATION }}"
+  when: (APACHE_FRONT == "yes") and (_APACHE_WEB_DIR.stat.exists)
+  tags: [apex-patch]
+
+- name: Remove all the Copied scripts
+  file:
+    path: "{{ APEX_PATCH_SCRIPT_LOCATION }}/{{ APEX_PATCH_SCRIPT }}"
+    state: absent
+  tags: [apex-patch]

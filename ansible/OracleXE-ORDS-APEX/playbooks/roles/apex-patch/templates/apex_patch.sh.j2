@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. /etc/profile.d/oracle_env.sh
+
+sqlplus /nolog <<EOF
+CONNECT / as sysdba
+@apxpatch.sql;
+exit;
+
+EOF

@@ -4,3 +4,11 @@ APEX_PATCH_ARCHIVE: p25341386_511_Generic.zip
 APEX_DEST_LOCATION: /u01/downloads
 ORACLE_USER: oracle
 ORACLE_GROUP: dba
+APEX_PATCH_SCRIPT_LOCATION: "{{ APEX_DEST_LOCATION }}/patch"
+APEX_PATCH_SCRIPT: apex_patch.sh
+WEBAPPS_ROOT: /usr/share/tomcat/latest/webapps
+APACHE_FRONT: !!str yes
+APACHE_WEB_DIR: /var/www
+APACHE_IMAGES_LOCATION: "{{ APACHE_WEB_DIR }}/apex"
+TOMCAT_USER: tomcat
+TOMCAT_GROUP: tomcat
