@@ -202,3 +202,7 @@ It is not necessary for the playbook task to have all these tags in order for it
 **Executing playbook with commandline overrides of some variables**
 
 	$ ansible-playbook -vvv -i '192.168.1.106,' -e "ansible_ssh_user=centos copy_rpm=no ansible_ssh_private_key_file=~/.ssh/db_server_id_rsa" playbooks/play.yml
+
+**Executing playbook with password on command line
+
+	$ ansible-playbook -i '192.168.1.106,' -e "ansible_ssh_user=user01 ansible_ssh_port=2222 APEX_DEST_LOCATION=/tmp" playbooks/patch.yml --ask-pass --ask-sudo-pass
