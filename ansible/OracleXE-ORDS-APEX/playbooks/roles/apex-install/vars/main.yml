@@ -1,5 +1,5 @@
 ---
-# vars file for apex-upgrade
+# vars file for apex-install
 APEX_ARCHIVE: apex_5.1.zip
 APEX_DEST_LOCATION: /u01/downloads
 ORACLE_USER: oracle

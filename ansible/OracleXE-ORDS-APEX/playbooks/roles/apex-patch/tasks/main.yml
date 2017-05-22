@@ -5,28 +5,25 @@
 
 - name: Unarchive the Apex Patch archive file after uploading to remote server
   unarchive:
-    src: "{{ APEX__PATCH_ARCHIVE }}"
+    src: "{{ APEX_PATCH_ARCHIVE }}"
     dest: "{{ APEX_DEST_LOCATION }}"
     owner: "{{ ORACLE_USER }}"
     group: "{{ ORACLE_GROUP }}"
     mode: 0755
   tags: [apex-patch]
 
-- name: Stop httpd before applying the patch
+- name: Stop web servers before applying the patch
   service:
-    name: httpd
-    state: stop
-  tags: [apex-patch]
-
-- name: Stop tomcat before applying the patch
-  service:
-    name: tomcat
-    state: stop
+    name: "{{ item }}"
+    state: stopped
+  with_items:
+    - httpd
+    - tomcat
   tags: [apex-patch]
 
 - name: Copy the APEX patch script to server
   template:
-    src: "{{ APEX_PATCH_SCRIPT }}".j2
+    src: "{{ APEX_PATCH_SCRIPT }}.j2"
     dest: "{{ APEX_PATCH_SCRIPT_LOCATION }}/{{ APEX_PATCH_SCRIPT }}"
     owner: "{{ ORACLE_USER }}"
     group: "{{ ORACLE_GROUP }}"
@@ -66,4 +63,13 @@
   file:
     path: "{{ APEX_PATCH_SCRIPT_LOCATION }}/{{ APEX_PATCH_SCRIPT }}"
     state: absent
+  tags: [apex-patch]
+
+- name: Start web servers after applying the patch
+  service:
+    name: "{{ item }}"
+    state: started
+  with_items:
+    - httpd
+    - tomcat
   tags: [apex-patch]

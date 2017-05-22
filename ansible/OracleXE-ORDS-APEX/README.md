@@ -135,8 +135,8 @@ Some other variables - mostly self explanatory -
 * `TOMCAT_GROUP`: tomcat
 * `TOMCAT_WEBAPP_LOCATION`: /usr/share/tomcat/latest/webapps
 
-### APEX Upgrade
-Oracle-XE already comes with APEX version 4.x. After the installation of XE, APEX can be upgraded to the latest APEX 5.1. This role performs this upgrade. APEX can be downloaded from [http://www.oracle.com/technetwork/developer-tools/apex/downloads/download-085147.html](OTN). After downloading place the zip file in the files directory under the apex-upgrade role. In case there is a newer version available then you can use that also and the installation steps should remain the same, as the installation is taken care of by the install sql script which came with the APEX.
+### APEX Install
+Oracle-XE already comes with APEX version 4.x. After the installation of XE, APEX can be upgraded to the latest APEX 5.1 (note the latest now is 5.1.1 and this role has been tested to work with that also). This role performs this upgrade. The install script provided with the APEX takes care of deciding if an upgrade is needed or an install. APEX can be downloaded from [http://www.oracle.com/technetwork/developer-tools/apex/downloads/download-085147.html](OTN). After downloading place the zip file in the files directory under the apex-upgrade role. In case there is a newer version available then you can use that also and the installation steps should remain the same, as the installation is taken care of by the install sql script which came with the APEX.
 
 Following are the variables used - 
 
@@ -166,6 +166,28 @@ Passwords for some of the users used by APEX and ORDS
 * `TOMCAT_USER`: Tomcat user. Set to tomcat
 * `TOMCAT_GROUP`: Tomcat group. Set to tomcat
 
+### APEX Patch
+In case an apex patch becomes available after you install. This role can help apply the same. Download  the patch from My Oracle Support and place it in the files directory of this role before moving ahead.
+
+Following are the variables used - 
+
+* `APEX_PATCH_ARCHIVE`: p25341386_511_Generic.zip
+* `APEX_DEST_LOCATION`: This is whwere the patch will be unarchived. Currently set to /u01/downloads
+* `ORACLE_USER`: oracle
+* `ORACLE_GROUP`: dba
+* `APEX_PATCH_SCRIPT_LOCATION`: "{{ APEX_DEST_LOCATION }}/patch"
+
+Custom configuration scripts -
+
+* `APEX_PATCH_SCRIPT`: apex_patch.sh
+
+* `WEBAPPS_ROOT`: Tomcat webapps location. Currently set to /usr/share/tomcat/latest/webapps.
+* `APACHE_FRONT`: The value of this variable tells if the setup uses Apache webserver in front of tomcat. The default value is yes. It has been specifed as "!!str yes". The reason for the same can be read here - [https://ajitabhpandey.info/2017/03/ansible-quirks-1/](Ansible Quirks - 1)
+* `APACHE_WEB_DIR`: This is where usually Apache web root is present if apache is installed. Currently set to /var/www.
+* `APACHE_IMAGES_LOCATION`: This is the directory in apache web root location where apex images will be copied. This is set to "{{ APACHE_WEB_DIR }}/apex".
+* `TOMCAT_USER`: Tomcat user. Set to tomcat
+* `TOMCAT_GROUP`: Tomcat group. Set to tomcat
+
 ##Examples
 ###Running this playbook
 **Executing playbook for a single hostgroup**
@@ -179,4 +201,4 @@ It is not necessary for the playbook task to have all these tags in order for it
 
 **Executing playbook with commandline overrides of some variables**
 
-	$ ansible-playbook -vvv -i '35.154.158.42,' -e "ansible_ssh_user=centos copy_rpm=no ansible_ssh_private_key_file=~/.ssh/db_server_id_rsa" playbooks/play.yml
+	$ ansible-playbook -vvv -i '192.168.1.106,' -e "ansible_ssh_user=centos copy_rpm=no ansible_ssh_private_key_file=~/.ssh/db_server_id_rsa" playbooks/play.yml

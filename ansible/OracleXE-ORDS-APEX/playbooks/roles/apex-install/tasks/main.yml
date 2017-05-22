@@ -1,5 +1,5 @@
 ---
-# tasks file for apex-upgrade
+# tasks file for apex-install
 - name: Ensures "{{ APEX_DEST_LOCATION }}" exists
   file:
     path: "{{ APEX_DEST_LOCATION }}"

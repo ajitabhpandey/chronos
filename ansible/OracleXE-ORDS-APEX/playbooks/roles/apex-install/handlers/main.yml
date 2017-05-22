@@ -1,4 +1,4 @@
-# handlers file for apex-upgrade
+# handlers file for apex-install
 - name: Restart httpd
   service:
     name: httpd

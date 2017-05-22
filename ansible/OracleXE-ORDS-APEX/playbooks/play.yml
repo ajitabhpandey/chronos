@@ -43,3 +43,4 @@
     - oracle-xe
     - ords
     - apex-upgrade
+    - apex-patch
