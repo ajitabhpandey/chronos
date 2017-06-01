@@ -3,11 +3,23 @@
 - name: Clean yum cache
   command: yum clean all
 
-- name: Import CentOS 6 GPG Key
-  rpm_key:
-    state: present
-    key: http://mirror.centos.org/centos/6/os/x86_64/RPM-GPG-KEY-CentOS-6
-  when: ansible_distribution=="RedHat" and ansible_distribution_major_version=="6" and ansible_userspace_architecture=="x86_64"
+- name: Create a directory to hold initial CentOS packages
+  file:
+    path: "{{ CENTOS_RPM_STORE }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0655
+
+- name: Download the required packages from CentOS Mirror
+  shell: wget -q -l1 -r -np -nd -A "{{ item }}" -P "{{ CENTOS_RPM_STORE }}" http://mirror.centos.org/centos-{{ansible_distribution_major_version}}/{{ ansible_distribution_version }}/os/{{ ansible_userspace_architecture }}/Packages/
+  with_items:
+    - centos-release*.rpm
+    - centos-indexhtml*.rpm
+    - yum-plugin-fastestmirror*.rpm
+    - yum-[0-9]*.rpm
+    - python-urlgrabber*.rpm
+  when: ansible_distribution=="RedHat"
 
 - name: Remove RHEL subscription information
   command: "subscription-manager clean"
@@ -17,32 +29,21 @@
 - name: Remove RHEL Packages - 1
   command: "yum -y remove subscription-manager rhnlib redhat-release-notes*"
   when: ansible_distribution=="RedHat"
+  ignore_errors: true
 
 - name: Remove RHEL Packages - 2
   command: "rpm -e --nodeps redhat-release-server-6Server redhat-indexhtml"
   when: ansible_distribution=="RedHat"
+  ignore_errors: true
 
-- name: Create a directory to hold initial CentOS packages
-  file:
-    path: "{{ CENTOS_RPM_STORE }}"
-    state: directory
-    owner: root
-    group: root
-    mode: 655
-
-- name: Copy CentOS RPMs to target
-  copy:
-    src: "{{ item }}"
-    dest: "{{ CENTOS_RPM_STORE }}/{{ item }}"
-  with_items:
-    - centos-release-6-8.el6.centos.12.3.x86_64.rpm
-    - centos-indexhtml-6-2.el6.centos.noarch.rpm
-    - yum-3.2.29-73.el6.centos.noarch.rpm
-    - yum-plugin-fastestmirror-1.1.30-37.el6.noarch.rpm
-    - python-urlgrabber-3.9.1-11.el6.noarch.rpm
+- name: Import CentOS 6 GPG Key
+  rpm_key:
+    state: present
+    key: http://mirror.centos.org/centos/6/os/x86_64/RPM-GPG-KEY-CentOS-6
+  when: ansible_distribution=="RedHat" and ansible_distribution_major_version=="6" and ansible_userspace_architecture=="x86_64"
 
 - name: Install the CentOS RPMs
-  command: "rpm -Uvh --force {{ CENTOS_RPM_STORE }}/*.rpm"
+  command: "rpm -ivh --force {{ CENTOS_RPM_STORE }}/*.rpm"
 
 - name: Remove the CentOS RPM hold directory
   command: "rm -rf {{ CENTOS_RPM_STORE }}"
