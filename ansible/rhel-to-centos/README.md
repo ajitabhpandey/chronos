@@ -12,7 +12,7 @@ $ ansible-playbook -i inventory play.yml
 * Specified the host, user using which the connections will be made and private key file on the command line
 
 ```
-$ ansible-playbook -vvv -i '10.39.201.80,' -e "ansible_ssh_user=ec2-user ansible_ssh_private_key_file=~/.ssh/infrastructure-engineering-aord.pem" play.yml
+$ ansible-playbook -vvv -i '10.39.201.80,' -e "ansible_ssh_user=ec2-user ansible_ssh_private_key_file=~/.ssh/id_rsa" play.yml
 ```
 
 ## Note
