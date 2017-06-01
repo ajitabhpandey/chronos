@@ -1,4 +1,4 @@
-#README
+# README
 This playbook installs the following on the specified inventory - 
 
 * Oracle XE
@@ -188,8 +188,8 @@ Custom configuration scripts -
 * `TOMCAT_USER`: Tomcat user. Set to tomcat
 * `TOMCAT_GROUP`: Tomcat group. Set to tomcat
 
-##Examples
-###Running this playbook
+## Examples
+### Running this playbook
 **Executing playbook for a single hostgroup**
 
 	$ ansible-playbook -l db-servers playbooks/play.yml
