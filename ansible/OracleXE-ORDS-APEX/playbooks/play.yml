@@ -42,5 +42,5 @@
     - tomcat
     - oracle-xe
     - ords
-    - apex-upgrade
+    - apex-install
     - apex-patch
