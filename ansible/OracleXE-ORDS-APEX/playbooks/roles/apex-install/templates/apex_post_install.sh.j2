@@ -22,6 +22,12 @@ alter user apex_rest_public_user profile web_service_profile;
 alter user apex_public_user account unlock;
 alter user apex_public_user identified by "{{ APEX_PUBLIC_USER_PASSWORD }}";
 
+alter user apex_listener account unlock;
+alter user apex_listener identified by "{{ APEX_LISTENER_PASSWORD }}";
+
+alter user apex_rest_public_user account unlock;
+alter user apex_rest_public_user identified by {{ APEX_REST_PUBLIC_USER_PASSWORD }};
+
 exit;
 
 EOF
