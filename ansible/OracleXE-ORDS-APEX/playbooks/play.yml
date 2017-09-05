@@ -10,7 +10,7 @@
   gather_facts: True
   pre_tasks:
     - name: Set SELinux to Permissive if it is not already disabled
-      selinux: 
+      selinux:
         state: permissive
       when: ansible_selinux.status != "disabled"
 
@@ -42,6 +42,6 @@
     - jdk
     - tomcat
     - oracle-xe
-    - ords
     - apex-install
-    - apex-patch
+    - ords
+#    - apex-patch
