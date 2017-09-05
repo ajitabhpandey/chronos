@@ -1,7 +1,7 @@
 ---
 # vars file for apex-install
-APEX_ARCHIVE: apex_5.1.1.zip
-APEX_DEST_LOCATION: /u01/downloads
+APEX_ARCHIVE: apex_5.1.2_en.zip
+APEX_DEST_LOCATION: /u01
 ORACLE_USER: oracle
 ORACLE_GROUP: dba
 APEX_TABLESPACE: APEX_TABSPACE

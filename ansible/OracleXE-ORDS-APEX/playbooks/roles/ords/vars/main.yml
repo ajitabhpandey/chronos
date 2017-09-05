@@ -1,6 +1,6 @@
 ---
 # vars file for ords
-ORDS_ARCHIVE: ords.3.0.9.348.07.16.zip
+ORDS_ARCHIVE: ords.3.0.11.180.12.34.zip
 BASE_LOCATION: /u01
 ORDS_DEST_LOCATION: "{{ BASE_LOCATION }}/ords"
 ORDS_CONFIG_LOCATION: "{{ ORDS_DEST_LOCATION }}/config"
