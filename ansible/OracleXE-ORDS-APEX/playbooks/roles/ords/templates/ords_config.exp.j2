@@ -2,7 +2,7 @@
 
 set timeout 20
 
-set CMD "java -jar /u01/ords/ords.war install"
+set CMD "java -Djava.security.egd=file:/dev/../dev/urandom -jar /u01/ords/ords.war install"
 spawn {*}$CMD
 
 expect "Enter the database password for ORDS_PUBLIC_USER:"
