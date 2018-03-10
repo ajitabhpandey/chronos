@@ -1,4 +1,4 @@
-#README
+# README
 This playbook installs the following on the specified inventory - 
 
 * Oracle XE
@@ -188,8 +188,8 @@ Custom configuration scripts -
 * `TOMCAT_USER`: Tomcat user. Set to tomcat
 * `TOMCAT_GROUP`: Tomcat group. Set to tomcat
 
-##Examples
-###Running this playbook
+## Examples
+### Running this playbook
 **Executing playbook for a single hostgroup**
 
 	$ ansible-playbook -l db-servers playbooks/play.yml
@@ -202,3 +202,7 @@ It is not necessary for the playbook task to have all these tags in order for it
 **Executing playbook with commandline overrides of some variables**
 
 	$ ansible-playbook -vvv -i '192.168.1.106,' -e "ansible_ssh_user=centos copy_rpm=no ansible_ssh_private_key_file=~/.ssh/db_server_id_rsa" playbooks/play.yml
+
+**Executing playbook with password on command line
+
+	$ ansible-playbook -i '192.168.1.106,' -e "ansible_ssh_user=user01 ansible_ssh_port=2222 APEX_DEST_LOCATION=/tmp" playbooks/patch.yml --ask-pass --ask-sudo-pass

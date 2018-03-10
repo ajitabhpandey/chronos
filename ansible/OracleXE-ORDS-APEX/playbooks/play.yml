@@ -9,9 +9,10 @@
   become: True
   gather_facts: True
   pre_tasks:
-    - name: Set SELinux to Permissive if found enabled
-      command: setenforce Permissive
-      when: ansible_selinux.mode == "enforcing"
+    - name: Set SELinux to Permissive if it is not already disabled
+      selinux:
+        state: permissive
+      when: ansible_selinux.status != "disabled"
 
     - name: Set SELinux to Permissive in config file if found Enforcing
       lineinfile:
@@ -19,7 +20,7 @@
         regexp: '(\s*)SELINUX=enforcing$'
         line: '\1SELINUX=permissive'
         backrefs: yes
-      when: ansible_selinux.config_mode == "enforcing"
+      when: ansible_selinux.status != "disabled"
 
     - name: Install some additional packages
       yum:
@@ -41,6 +42,6 @@
     - jdk
     - tomcat
     - oracle-xe
+    - apex-install
     - ords
-    - apex-upgrade
-    - apex-patch
+#    - apex-patch

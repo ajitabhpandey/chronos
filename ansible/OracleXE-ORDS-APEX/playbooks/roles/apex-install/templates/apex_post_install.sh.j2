@@ -4,7 +4,11 @@
 
 sqlplus -s /nolog <<EOF
 CONNECT / as sysdba
-whenever sqlerror exit sql.sqlcode
+--
+-- Disabled the following exit on error because the drop users may fail
+-- if the users do not exists. This can be re-enabled, once the sql is fixed
+-- 
+-- whenever sqlerror exit sql.sqlcode
 
 set pagesize 0 feedback off verify off heading off echo off;
 
@@ -21,6 +25,32 @@ alter user apex_rest_public_user profile web_service_profile;
 
 alter user apex_public_user account unlock;
 alter user apex_public_user identified by "{{ APEX_PUBLIC_USER_PASSWORD }}";
+
+alter user apex_listener account unlock;
+alter user apex_listener identified by "{{ APEX_LISTENER_PASSWORD }}";
+
+alter user apex_rest_public_user account unlock;
+alter user apex_rest_public_user identified by {{ APEX_REST_PUBLIC_USER_PASSWORD }};
+
+-- disable XDB server
+-- assumes we will use ORDS or other web listener instead
+exec dbms_xdb.sethttpport(0);
+exec dbms_xdb.setftpport(0);
+
+-- anonymous user is not needed when we don't use XDB
+alter user anonymous account lock;
+
+--
+-- Modify the following drop users to drop the users only if they exists.
+-- Need checking for if the user exists
+--
+-- drop demo schemas
+drop user hr cascade;
+
+-- remove previous versions of Apex
+drop user apex_040000 cascade;
+drop user apex_040100 cascade;
+drop user apex_040200 cascade;
 
 exit;
 

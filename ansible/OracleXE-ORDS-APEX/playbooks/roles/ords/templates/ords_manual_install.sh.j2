@@ -1,6 +1,13 @@
 #!/bin/bash
 . /etc/profile.d/oracle_env.sh
 
+# Create a tablespace for holding ORDS Metadata
+sqlplus -s /nolog <<EOF
+CONNECT / AS SYSDBA
+CREATE TABLESPACE {{ TBSPC_ORDS_METADATA }} DATAFILE '{{ ORDS_TBSPACE_DATAFILE }}' SIZE 10M AUTOEXTEND ON;
+EXIT;
+EOF
+
 # Unlock the APEX Public User and set a password
 sqlplus -s /nolog <<EOF
 CONNECT / AS SYSDBA

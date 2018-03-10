@@ -27,15 +27,3 @@
     - name: Configure oracle-xe
       shell: /etc/init.d/oracle-xe configure < /tmp/oracle-xe.conf >> /tmp/oracle-xe.log
       tags: [install,configure,xe]
-
-    - name: Check if firewall-cmd binary exists
-      stat:
-        path: /usr/bin/firewall-cmd
-      register: firewallcmd
-      tags: [install,configure,xe]
-
-    - name: Open port 1521 in the local firewall
-      shell: firewall-cmd --permanent --add-port=1521/tcp
-      when: (ansible_os_family == "RedHat") and (firewallcmd.stat.exists == True)
-      notify: Restart firewalld
-      tags: [install,configure,xe]

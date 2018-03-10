@@ -2,9 +2,12 @@
 
 . /etc/profile.d/oracle_env.sh
 
+# Create a tablespace for APEX and install APEX in it
+
 sqlplus /nolog <<EOF
 CONNECT / as sysdba
-@apexins.sql SYSAUX SYSAUX TEMP /i/;
+CREATE TABLESPACE {{ APEX_TABLESPACE }} DATAFILE '{{ APEX_TABLESPACE_DATA_FILE }}' SIZE 10M AUTOEXTEND ON;
+@apexins.sql {{ APEX_TABLESPACE }} {{ APEX_TABLESPACE }} TEMP /i/;
 exit;
 
 EOF
